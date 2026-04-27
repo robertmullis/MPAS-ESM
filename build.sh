@@ -19,6 +19,8 @@ OPTIONS
   -p, --platform=PLATFORM
       name of machine you are building on
       (e.g. derecho)
+  --regional
+      build with regional coupling support - MOM6
   --remove
       removes existing build
   -v, --verbose
@@ -46,6 +48,7 @@ Settings:
   COMPONENT_LIST = ${COMPONENT_LIST}
   DEBUG = ${DEBUG}
   PLATFORM = ${PLATFORM}
+  REGIONAL = ${REGIONAL}
   REMOVE = ${REMOVE}
   VERBOSE = ${VERBOSE}
 
@@ -66,6 +69,7 @@ COMPILER="gnu"
 DEBUG=false
 INSTALL_DIR=${INSTALL_DIR:-${APP_DIR}/install}
 PLATFORM="derecho"
+REGIONAL=false
 REMOVE=false
 VERBOSE=true
 
@@ -82,6 +86,8 @@ while :; do
     --debug=?*|--debug=) usage_error "$1 argument ignored." ;;
     --platform=?*|-p=?*) PLATFORM=${1#*=} ;;
     --platform|--platform=|-p|-p=) usage_error "$1 requires argument." ;;
+    --regional) REGIONAL=true ;;
+    --regional=?*|--regional=) usage_error "$1 argument ignored." ;;
     --remove) REMOVE=true ;;
     --remove=?*|--remove=) usage_error "$1 argument ignored." ;;
     --verbose|-v) VERBOSE=true ;;
@@ -214,7 +220,11 @@ if [[ "${dict_comps["mom6"]}" == "true" ]]; then
   echo "  mom6:" >> esmxBuild.yaml
   echo "    source_dir: src/MOM6_interface" >> esmxBuild.yaml
   echo "    build_type: $build_type" >> esmxBuild.yaml
-  echo "    build_args: \"-DCMAKE_Fortran_FLAGS=-I${FMS_ROOT}/include_r8\"" >> esmxBuild.yaml
+  if [ "${REGIONAL}" = true ] ; then
+    echo "    build_args: \"-DREGIONAL_MOM6=ON -DCMAKE_Fortran_FLAGS=-I${FMS_ROOT}/include_r8\"" >> esmxBuild.yaml
+  else
+    echo "    build_args: \"-DCMAKE_Fortran_FLAGS=-I${FMS_ROOT}/include_r8\"" >> esmxBuild.yaml
+  fi
   echo "    fort_module: mom_cap_mod.mod" >> esmxBuild.yaml
   echo "    libraries: mom6" >> esmxBuild.yaml
   echo "    link_paths: $FMS_ROOT" >> esmxBuild.yaml
@@ -225,9 +235,13 @@ if [[ "${dict_comps["cmeps"]}" == "true" ]]; then
   echo "  cmeps:" >> esmxBuild.yaml
   echo "    source_dir: src/CMEPS-interface" >> esmxBuild.yaml
   echo "    build_type: $build_type" >> esmxBuild.yaml
-  echo "    build_args: \"-DCESMCOUPLED=ON -DPIO_C_LIBRARY=$PIO_C_LIBRARY -DPIO_C_INCLUDE_DIR=$PIO_C_INCLUDE_DIR -DPIO_Fortran_LIBRARY=$PIO_Fortran_LIBRARY -DPIO_Fortran_INCLUDE_DIR=$PIO_Fortran_INCLUDE_DIR -DCMAKE_Fortran_FLAGS=-I${PWD}/build/docn/share\"" >> esmxBuild.yaml
+  if [ "${REGIONAL}" = true ] ; then
+    echo "    build_args: \"-DCESMCOUPLED=ON -DCDEPS_INLINE=ON -DPIO_C_LIBRARY=$PIO_C_LIBRARY -DPIO_C_INCLUDE_DIR=$PIO_C_INCLUDE_DIR -DPIO_Fortran_LIBRARY=$PIO_Fortran_LIBRARY -DPIO_Fortran_INCLUDE_DIR=$PIO_Fortran_INCLUDE_DIR -DCMAKE_Fortran_FLAGS=-I${PWD}/install/include\"" >> esmxBuild.yaml
+  else
+    echo "    build_args: \"-DCESMCOUPLED=ON -DPIO_C_LIBRARY=$PIO_C_LIBRARY -DPIO_C_INCLUDE_DIR=$PIO_C_INCLUDE_DIR -DPIO_Fortran_LIBRARY=$PIO_Fortran_LIBRARY -DPIO_Fortran_INCLUDE_DIR=$PIO_Fortran_INCLUDE_DIR -DCMAKE_Fortran_FLAGS=-I${PWD}/build/docn/share\"" >> esmxBuild.yaml
+  fi
   echo "    fort_module: med.mod" >> esmxBuild.yaml
-  echo "    libraries: cmeps cdeps_share" >> esmxBuild.yaml
+  echo "    libraries: cmeps dshr streams cdeps_share" >> esmxBuild.yaml
 fi
 
 # Build application
