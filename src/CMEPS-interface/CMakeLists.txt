@@ -133,12 +133,6 @@ target_include_directories(cmeps PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY
 target_compile_definitions(cmeps PRIVATE ${CDEPS_SHARE_DEFS})
 target_link_libraries(cmeps PUBLIC esmf)
 
-### Set dependency for CDEPS if inline capability is requested
-if(CDEPS_INLINE)
-  add_dependencies(cmeps cdeps::cdeps)
-  target_link_libraries(cmeps PUBLIC cdeps::cdeps)
-endif()
-
 ###############################################################################
 ### Install
 ###############################################################################
