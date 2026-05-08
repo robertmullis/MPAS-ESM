@@ -234,7 +234,7 @@ if [[ "${dict_comps["mom6"]}" == "true" ]]; then
   echo "    source_dir: src/MOM6_interface" >> esmxBuild.yaml
   echo "    build_type: $build_type" >> esmxBuild.yaml
   if [ "${REGIONAL}" = true ] ; then
-    echo "    build_args: \"-DREGIONAL_MOM6=ON -DCMAKE_Fortran_FLAGS=-I${FMS_ROOT}/include_r8\"" >> esmxBuild.yaml
+    echo "    build_args: \"-DCESMCOUPLED=ON -DREGIONAL_MOM6=ON -DCMAKE_Fortran_FLAGS=-I${FMS_ROOT}/include_r8\"" >> esmxBuild.yaml
   else
     echo "    build_args: \"-DCMAKE_Fortran_FLAGS=-I${FMS_ROOT}/include_r8\"" >> esmxBuild.yaml
   fi

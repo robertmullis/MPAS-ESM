@@ -15,6 +15,9 @@ list(APPEND mom6_nuopc_src_files
   shared/shr_kind_mod.F90
   shared/shr_strconvert_mod.F90
   shared/shr_infnan_mod.F90
+  shared/nuopc_shr_methods.F90
+  shared/shr_sys_mod.F90
+  shared/shr_abort_mod.F90
 )
 
 list(APPEND mom6_src_files
