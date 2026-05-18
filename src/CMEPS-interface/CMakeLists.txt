@@ -43,9 +43,11 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../CDEPS/cmake)
 list(APPEND _shared_files
   ${PROJECT_SOURCE_DIR}/shared/perf_mod.F90
   ${PROJECT_SOURCE_DIR}/shared/shr_pio_mod.F90
-  ${PROJECT_SOURCE_DIR}/shared/shr_wv_sat_mod.F90)
+  ${PROJECT_SOURCE_DIR}/shared/shr_wv_sat_mod.F90
+  CMEPS/ufs/wtracers_mod.F90)
 
 list(APPEND _mediator_files
+  CMEPS/mediator/med_field_info_mod.F90
   CMEPS/mediator/med_phases_restart_mod.F90
   CMEPS/mediator/med_map_mod.F90
   CMEPS/mediator/med_methods_mod.F90
