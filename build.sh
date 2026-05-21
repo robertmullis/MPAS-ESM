@@ -156,6 +156,16 @@ else
   exit 0
 fi
 
+# Check build and installation directories. They need to be absolute path
+if [[ ! "$BUILD_DIR" =~ ^/ ]]; then
+  printf "\nERROR: Build directory $BUILD_DIR is not absolute path! Exiting...\n"
+  exit 0
+fi
+if [[ ! "$INSTALL_DIR" =~ ^/ ]]; then
+  printf "\nERROR: Install directory $INSTALL_DIR is not absolute path! Exiting...\n"
+  exit 0
+fi
+
 # Clean build
 if [ "${REMOVE}" = true ]; then
   # Clean build and install directories
@@ -256,9 +266,9 @@ if [[ "${dict_comps["cmeps"]}" == "true" ]]; then
   echo "    source_dir: src/CMEPS-interface" >> esmxBuild.yaml
   echo "    build_type: $build_type" >> esmxBuild.yaml
   if [ "${REGIONAL}" = true ] ; then
-    echo "    build_args: \"-DCESMCOUPLED=ON -DCDEPS_INLINE=ON -DPIO_C_LIBRARY=$PIO_C_LIBRARY -DPIO_C_INCLUDE_DIR=$PIO_C_INCLUDE_DIR -DPIO_Fortran_LIBRARY=$PIO_Fortran_LIBRARY -DPIO_Fortran_INCLUDE_DIR=$PIO_Fortran_INCLUDE_DIR -DCMAKE_Fortran_FLAGS=-I${PWD}/${INSTALL_DIR}/include\"" >> esmxBuild.yaml
+    echo "    build_args: \"-DCESMCOUPLED=ON -DCDEPS_INLINE=ON -DPIO_C_LIBRARY=$PIO_C_LIBRARY -DPIO_C_INCLUDE_DIR=$PIO_C_INCLUDE_DIR -DPIO_Fortran_LIBRARY=$PIO_Fortran_LIBRARY -DPIO_Fortran_INCLUDE_DIR=$PIO_Fortran_INCLUDE_DIR -DCMAKE_Fortran_FLAGS=-I${INSTALL_DIR}/include\"" >> esmxBuild.yaml
   else
-    echo "    build_args: \"-DCESMCOUPLED=ON -DPIO_C_LIBRARY=$PIO_C_LIBRARY -DPIO_C_INCLUDE_DIR=$PIO_C_INCLUDE_DIR -DPIO_Fortran_LIBRARY=$PIO_Fortran_LIBRARY -DPIO_Fortran_INCLUDE_DIR=$PIO_Fortran_INCLUDE_DIR -DCMAKE_Fortran_FLAGS=-I${PWD}/build/docn/share\"" >> esmxBuild.yaml
+    echo "    build_args: \"-DCESMCOUPLED=ON -DPIO_C_LIBRARY=$PIO_C_LIBRARY -DPIO_C_INCLUDE_DIR=$PIO_C_INCLUDE_DIR -DPIO_Fortran_LIBRARY=$PIO_Fortran_LIBRARY -DPIO_Fortran_INCLUDE_DIR=$PIO_Fortran_INCLUDE_DIR -DCMAKE_Fortran_FLAGS=-I${INSTALL_DIR}/include\"" >> esmxBuild.yaml
   fi
   echo "    fort_module: med.mod" >> esmxBuild.yaml
   echo "    libraries: cmeps dshr streams cdeps_share" >> esmxBuild.yaml
@@ -267,4 +277,4 @@ if [[ "${dict_comps["cmeps"]}" == "true" ]]; then
 fi
 
 # Build application
-ESMX_Builder -v --prefix=$INSTALL_DIR --build-jobs=${BUILD_JOBS} --cmake-args="-DCMAKE_Fortran_FLAGS=-I${PWD}/${INSTALL_DIR}/include"
+ESMX_Builder -v --prefix=$INSTALL_DIR --build-jobs=${BUILD_JOBS} --cmake-args="-DCMAKE_Fortran_FLAGS=-I${INSTALL_DIR}/include"
