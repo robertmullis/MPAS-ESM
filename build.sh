@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# SCOTCH is optional and detected automatically:
+# the SCOTCH flag (-DMPAS_SCOTCH) is turned ON when the SCOTCH environment
+# variable points to a SCOTCH build, and OFF when it is unset/empty.
+SCOTCH="${/glade/campaign/cesm/mpas_mom6/v0/libraries/scotch}"
+if [ -n "${SCOTCH}" ]; then
+  export SCOTCH
+  USE_SCOTCH=true
+else
+  USE_SCOTCH=false
+fi
+
 # usage instructions
 usage () {
 cat << EOF_USAGE
@@ -57,6 +68,7 @@ Settings:
   REGIONAL = ${REGIONAL}
   REMOVE = ${REMOVE}
   VERBOSE = ${VERBOSE}
+  USE_SCOTCH = ${USE_SCOTCH}
 
 EOF_SETTINGS
 }
@@ -210,6 +222,19 @@ if [[ ${arr[0]} -ge 9 ]]; then
    build_type="cmake.external"
 fi
 
+# SCOTCH build/link fragments, populated based on whether SCOTCH was detected
+if [ "${USE_SCOTCH}" = true ]; then
+  SCOTCH_ARGS="-DMPAS_SCOTCH=ON -DSCOTCH_ROOT=${SCOTCH} -DSCOTCH_INCLUDE_DIR=${SCOTCH}/src/include -DSCOTCH_LIBRARY=${SCOTCH}/lib/libptscotch.a -DSCOTCHERR_LIBRARY=${SCOTCH}/lib/libptscotcherr.a"
+  SCOTCH_LINK_PATH=" ${SCOTCH}/lib"
+  SCOTCH_LINK_LIBS=" ptscotch ptscotcherr scotch scotcherr"
+  SCOTCH_LINK_LIBS_MOM=" ptscotch ptscotcherr"
+else
+  SCOTCH_ARGS="-DMPAS_SCOTCH=OFF"
+  SCOTCH_LINK_PATH=""
+  SCOTCH_LINK_LIBS=""
+  SCOTCH_LINK_LIBS_MOM=""
+fi
+
 # Create esmxBuild.yaml
 echo "application:" >> esmxBuild.yaml
 echo "  disable_comps: ESMX_Data" >> esmxBuild.yaml
@@ -226,12 +251,12 @@ echo "  mpas_atm_nuopc:" >> esmxBuild.yaml
 echo "    source_dir: src/MPAS-Model" >> esmxBuild.yaml
 echo "    build_type: $build_type" >> esmxBuild.yaml
 if [ "${DEBUG}" = true ]; then
-echo "    build_args: \"-DMPAS_NUOPC=ON -DMPAS_DOUBLE_PRECISION=OFF -DMPAS_USE_PIO=ON -DDEBUG=ON\"" >> esmxBuild.yaml
+echo "    build_args: \"-DBUILD_SHARED_LIBS=OFF -DMPAS_NUOPC=ON -DMPAS_DOUBLE_PRECISION=OFF -DMPAS_USE_PIO=ON -DDEBUG=ON ${SCOTCH_ARGS}\"" >> esmxBuild.yaml
 else
-echo "    build_args: \"-DMPAS_NUOPC=ON -DMPAS_DOUBLE_PRECISION=OFF -DMPAS_USE_PIO=ON\"" >> esmxBuild.yaml
+echo "    build_args: \"-DBUILD_SHARED_LIBS=OFF -DMPAS_NUOPC=ON -DMPAS_DOUBLE_PRECISION=OFF -DMPAS_USE_PIO=ON ${SCOTCH_ARGS}\"" >> esmxBuild.yaml
 fi
-echo "    link_paths: ${ESMF_ROOT}/lib" >> esmxBuild.yaml
-echo "    link_libraries: esmf" >> esmxBuild.yaml
+echo "    link_paths: ${ESMF_ROOT}/lib${SCOTCH_LINK_PATH}" >> esmxBuild.yaml
+echo "    link_libraries: esmf${SCOTCH_LINK_LIBS}" >> esmxBuild.yaml
 # DOCN
 if [[ "${dict_comps["docn"]}" == "true" ]]; then
   echo "  docn:" >> esmxBuild.yaml
@@ -251,14 +276,14 @@ if [[ "${dict_comps["mom6"]}" == "true" ]]; then
   echo "    source_dir: src/MOM6_interface" >> esmxBuild.yaml
   echo "    build_type: $build_type" >> esmxBuild.yaml
   if [ "${REGIONAL}" = true ] ; then
-    echo "    build_args: \"-DCESMCOUPLED=ON -DREGIONAL_MOM6=ON -DCMAKE_Fortran_FLAGS=-I${FMS_ROOT}/include_r8\"" >> esmxBuild.yaml
+    echo "    build_args: \"-DCESMCOUPLED=ON -DREGIONAL_MOM6=ON -DCMAKE_Fortran_FLAGS=-I${FMS_ROOT}/include_r8 ${SCOTCH_ARGS}\"" >> esmxBuild.yaml
   else
     echo "    build_args: \"-DCMAKE_Fortran_FLAGS=-I${FMS_ROOT}/include_r8\"" >> esmxBuild.yaml
   fi
   echo "    fort_module: mom_cap_mod.mod" >> esmxBuild.yaml
   echo "    libraries: mom6" >> esmxBuild.yaml
-  echo "    link_paths: $FMS_ROOT" >> esmxBuild.yaml
-  echo "    link_libraries: fms_r8 cdeps_share" >> esmxBuild.yaml
+  echo "    link_paths: $FMS_ROOT${SCOTCH_LINK_PATH}" >> esmxBuild.yaml
+  echo "    link_libraries: fms_r8 cdeps_share${SCOTCH_LINK_LIBS_MOM}" >> esmxBuild.yaml
 fi
 # CMEPS
 if [[ "${dict_comps["cmeps"]}" == "true" ]]; then
@@ -266,14 +291,14 @@ if [[ "${dict_comps["cmeps"]}" == "true" ]]; then
   echo "    source_dir: src/CMEPS-interface" >> esmxBuild.yaml
   echo "    build_type: $build_type" >> esmxBuild.yaml
   if [ "${REGIONAL}" = true ] ; then
-    echo "    build_args: \"-DCESMCOUPLED=ON -DCDEPS_INLINE=ON -DPIO_C_LIBRARY=$PIO_C_LIBRARY -DPIO_C_INCLUDE_DIR=$PIO_C_INCLUDE_DIR -DPIO_Fortran_LIBRARY=$PIO_Fortran_LIBRARY -DPIO_Fortran_INCLUDE_DIR=$PIO_Fortran_INCLUDE_DIR -DCMAKE_Fortran_FLAGS=-I${INSTALL_DIR}/include\"" >> esmxBuild.yaml
+    echo "    build_args: \"-DCESMCOUPLED=ON -DCDEPS_INLINE=ON -DPIO_C_LIBRARY=$PIO_C_LIBRARY -DPIO_C_INCLUDE_DIR=$PIO_C_INCLUDE_DIR -DPIO_Fortran_LIBRARY=$PIO_Fortran_LIBRARY -DPIO_Fortran_INCLUDE_DIR=$PIO_Fortran_INCLUDE_DIR -DCMAKE_Fortran_FLAGS=-I${INSTALL_DIR}/include ${SCOTCH_ARGS}\"" >> esmxBuild.yaml
   else
     echo "    build_args: \"-DCESMCOUPLED=ON -DPIO_C_LIBRARY=$PIO_C_LIBRARY -DPIO_C_INCLUDE_DIR=$PIO_C_INCLUDE_DIR -DPIO_Fortran_LIBRARY=$PIO_Fortran_LIBRARY -DPIO_Fortran_INCLUDE_DIR=$PIO_Fortran_INCLUDE_DIR -DCMAKE_Fortran_FLAGS=-I${INSTALL_DIR}/include\"" >> esmxBuild.yaml
   fi
   echo "    fort_module: med.mod" >> esmxBuild.yaml
   echo "    libraries: cmeps dshr streams cdeps_share" >> esmxBuild.yaml
-  echo "    link_paths: ${ESMF_ROOT}/lib" >> esmxBuild.yaml
-  echo "    link_libraries: esmf" >> esmxBuild.yaml
+  echo "    link_paths: ${ESMF_ROOT}/lib${SCOTCH_LINK_PATH}" >> esmxBuild.yaml
+  echo "    link_libraries: esmf${SCOTCH_LINK_LIBS}" >> esmxBuild.yaml
 fi
 
 # Build application
