@@ -94,7 +94,7 @@ DEBUG=false
 INSTALL_DIR=${INSTALL_DIR:-${APP_DIR}/install}
 PLATFORM="derecho"
 REGIONAL=true
-REMOVE=true
+REMOVE=false
 VERBOSE=true
 
 # check arguments and set their values
