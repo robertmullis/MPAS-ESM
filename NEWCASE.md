@@ -148,7 +148,7 @@ Resources for the Carib 3 km coupled case:
   ```
 - **Data package** (full coupled inputs + dataset config):
   ```
-  /glade/derecho/scratch/mullis/cpl_carib_3km_data
+  /glade/campaign/cesm/mpas_mom6/v0/cpl_carib_3km_data
   ```
 
 Putting it together:
