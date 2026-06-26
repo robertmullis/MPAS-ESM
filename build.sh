@@ -40,9 +40,9 @@ OPTIONS
   --global
       build with global coupling support - MOM6
   --remove
-      default on, removes existing build
+      removes existing build
   --keep
-      keeps existing build
+      default on, keeps existing build
   -v, --verbose
       build with verbose output
 
