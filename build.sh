@@ -3,7 +3,7 @@
 # SCOTCH is optional and detected automatically:
 # the SCOTCH flag (-DMPAS_SCOTCH) is turned ON when the SCOTCH environment
 # variable points to a SCOTCH build, and OFF when it is unset/empty.
-SCOTCH="${/glade/campaign/cesm/mpas_mom6/v0/libraries/scotch}"
+SCOTCH="/glade/campaign/cesm/mpas_mom6/v0/libraries/scotch"
 if [ -n "${SCOTCH}" ]; then
   export SCOTCH
   USE_SCOTCH=true
