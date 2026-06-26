@@ -23,9 +23,10 @@ OPTIONS
       build directory
   --component-list=COMPONENT_LIST
       list of component/s to couple with MPAS seperated with comma
+      default to mom6,cmeps
       (e.g. mom6 | docn | cmeps)
   -c, --compiler=COMPILER
-      compiler to use; default depends on platform
+      compiler to use; default to intel
       (e.g. intel | gnu)
   -d, --debug
       enable debug mode
@@ -35,9 +36,13 @@ OPTIONS
       name of machine you are building on
       (e.g. derecho)
   --regional
-      build with regional coupling support - MOM6
+      default on,build with regional coupling support - MOM6
+  --global
+      build with global coupling support - MOM6
   --remove
-      removes existing build
+      default on, removes existing build
+  --keep
+      keeps existing build
   -v, --verbose
       build with verbose output
 
@@ -83,12 +88,13 @@ fi
 APP_DIR=$(cd "$(dirname "$(readlink -f -n "${BASH_SOURCE[0]}" )" )" && pwd -P)
 BUILD_DIR="${BUILD_DIR:-${APP_DIR}/build}"
 BUILD_JOBS=4
-COMPILER="gnu"
+COMPILER="intel"
+COMPONENT_LIST="mom6,cmeps"
 DEBUG=false
 INSTALL_DIR=${INSTALL_DIR:-${APP_DIR}/install}
 PLATFORM="derecho"
-REGIONAL=false
-REMOVE=false
+REGIONAL=true
+REMOVE=true
 VERBOSE=true
 
 # check arguments and set their values
@@ -110,8 +116,12 @@ while :; do
     --platform|--platform=|-p|-p=) usage_error "$1 requires argument." ;;
     --regional) REGIONAL=true ;;
     --regional=?*|--regional=) usage_error "$1 argument ignored." ;;
+    --global) REGIONAL=false ;;
+    --global=?*|--global=) usage_error "$1 argument ignored." ;;
     --remove) REMOVE=true ;;
     --remove=?*|--remove=) usage_error "$1 argument ignored." ;;
+    --keep) REMOVE=false ;;
+    --keep=?*|--keep=) usage_error "$1 argument ignored." ;;
     --verbose|-v) VERBOSE=true ;;
     --verbose=?*|--verbose=) usage_error "$1 argument ignored." ;;
     # unknown
