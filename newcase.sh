@@ -31,6 +31,7 @@ set -eu
 
 SCRIPTDIR=$(cd "$(dirname "$(readlink -f -n "${BASH_SOURCE[0]}")")" && pwd -P)
 DEFAULT_REF="/glade/campaign/cesm/mpas_mom6/v0/template"   # canonical boilerplate (config/scripts/tables); travels with this script
+DEFAULT_STATIC="/glade/campaign/cesm/mpas_mom6/v0/static_data"     # physics tables and RRTMG data
 DEFAULT_APP="$PWD"   # the MPAS-ESM/app checkout you run newcase from (has install/bin/esmx_app + envs/); override with --app
 
 # ---- what makes up the "necessary" (non-data) case ----------------------------
@@ -91,11 +92,17 @@ if [ -n "$DATA" ]; then
 fi
 
 for f in "${CONFIG_FILES[@]}" "${SCRIPT_FILES[@]}"; do
-  if [ -e "$REF/$f" ]; then ln -s "$REF/$f" "$CASE/"; else echo "  ! missing in ref: $f" >&2; fi
+  if [ -e "$REF/$f" ]; then cp -r "$REF/$f" "$CASE/"; else echo "  ! missing in ref: $f" >&2; fi
 done
-for g in "${TABLE_GLOBS[@]}"; do
-  for f in "$REF"/$g; do [ -e "$f" ] && ln -s "$(readlink -f "$f")" "$CASE/$(basename "$f")"; done
-done
+
+if [ -d "$DEFAULT_STATIC" ]; then
+  for f in "${DEFAULT_STATIC}"/*; do
+    [ -e "$f" ] || continue
+    ln -s "$(readlink -f "$f")" "$CASE/$(basename "$f")"
+  done
+else
+  echo "  ! static data dir not found: $DEFAULT_STATIC" >&2
+fi
 
 # env: link the canonical build env so run env == build env
 if   [ -e "/glade/campaign/cesm/mpas_mom6/v0/template/derecho_env_intel.sh" ]; then ln -s "/glade/campaign/cesm/mpas_mom6/v0/template/derecho_env_intel.sh" "$CASE/$ENV_FILE"
