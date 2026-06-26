@@ -115,7 +115,7 @@ else echo "  ! no DATA.md doc found (see --doc)" >&2; fi
 echo "============================================================"
 echo " Case   : $CASE"
 echo " Binary : ${BIN:-<none - set CASE/esmx_app>}"
-echo " Inputs : put your files in data/  (guide: data/DATA.md)"
+echo " Inputs : ${DATA:-<none - put your input files in $CASE/data/>}"
 echo "------------------------------------------------------------"
 echo " Next:"
 echo "   cd $CASE"
